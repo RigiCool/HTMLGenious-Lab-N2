@@ -1,0 +1,168 @@
+{% extends 'main/layout.html' %}
+
+{% block form %}
+  <form class="" method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <div class="text-start my-3">
+      <h6>Background:</h6>
+      <div class="d-flex">
+        <input class="form-check-input" type="radio" id="color" name="background" value="color" onclick="toggleBackgroundTypeVisibility(this)">
+        <label class="mx-3" for="color">Background color</label>
+        <div id="backgroundDiv_color" class="d-none" style="width:50%">
+          {{form.background_color}}
+        </div>
+      </div>
+      <div class="d-flex">
+        <input class="form-check-input" type="radio" id="image" name="background" value="image" onclick="toggleBackgroundTypeVisibility(this)">
+        <label class="mx-3" for="image">Background image</label>
+        <div id="backgroundDiv_image" class="d-none">
+            {{form.background_image}}
+        </div>
+      </div>
+    </div>
+
+    <div class="text-start my-3">
+       {{form.dark_mode}} <span class="mx-2">Dark Mode </span> <br>
+       {{form.effect}} <span class="mx-2">Cool Effect </span> <br>
+    </div>
+    {{form.title}}<br>
+    {{form.subtitle}}<br>
+
+    <div class="selection_menu my-3">
+      <input class="form-check-input" type="radio" name="content" value="content" onclick="toggleColumnSliderVisibility(this)">
+      <label class="" for="image">Section with content</label> <br>
+      <input class="form-check-input" type="radio" name="content" value="slider" onclick="toggleColumnSliderVisibility(this)">
+      <label class="" for="image">Section with slider </label> <br>
+      <input class="form-check-input" type="radio" name="content" value="none" onclick="toggleColumnSliderVisibility(this)">
+      <label class="" for="image">None</label><br>
+    </div>
+
+    <div class="content_form d-none" id="content_form">
+      <h3>Content</h3>
+      {{form.column_number}}<br>
+      <div id="column_1" class="d-none my-3">
+        {{form.column_content_1_text}}
+        {{form.column_content_1_image}}
+      </div>
+      <div id="column_2" class="d-none  my-3">
+        {{form.column_content_2_text}}
+        {{form.column_content_2_image}}
+      </div>
+      <div id="column_3" class="d-none  my-3">
+        {{form.column_content_3_text}}
+        {{form.column_content_3_image}}
+      </div>
+    </div>
+
+    <div class="slider_form d-none" id="slider_form">
+      <h3>Slider</h3>
+      {{ formset.management_form }}
+      {% for slide_form in formset %}
+        <div class="slide-form">
+          {{ slide_form.as_p }}
+        </div>
+      {% endfor %}
+    </div>
+    <button type="submit" class="btn btn-success" name="button">Add page</button>
+    <span> {{error}} </span>
+  </form>
+{% endblock %}
+
+{% block content %}
+  {% for page in pages %}
+      <div class="layer px-2" style="{% if page.background_image %}background-image: url(media/{{ page.background_image }});{% endif %}{% if page.background_color %}background-color: {{ page.background_color }}{% endif %};{%if page.dark_mode %}color:#000{% endif %};">
+          <form action="{% url 'delete_page' page.id %}" method="post" class="d-flex justify-content-end p-5">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-danger">Delete Page</button>
+          </form>  
+          <div class="text-center py-5">
+                <h1>{{page.title}}</h1>
+                <h2>{{page.subtitle}}</h2>
+          </div>
+          <div class="d-flex justify-content-center py-2">
+
+                  {% if page.column_number >= 1 %}
+                  <div class="p-4
+                              {% if page.column_number == 2 %}
+                                  col-6
+                              {% elif page.column_number == 3 %}
+                                  col-4
+                              {% elif page.column_number == 1 %}
+                                  col-12
+                              {% endif %}
+                              "
+                  >
+                  <div class="d-flex justify-content-center image_control">
+                    <div class="image_container" style="{%if page.effect %}transform: rotateX(var(--move-y)) rotateY(var(--move-x));{% endif %}">
+                      <img class="image img-fluid" src="media/{{ page.column_content_1_image }}" alt="">
+                    </div>
+                  </div>
+
+                      <p>{{ page.column_content_1_text }}</p>
+                    </div>
+                  {% endif %}
+                  {% if page.column_number >= 2 %}
+                  <div class="p-4
+                              {% if page.column_number == 2 %}
+                                  col-6
+                              {% elif page.column_number == 3 %}
+                                  col-4
+                              {% elif page.column_number == 1 %}
+                                  col-12
+                              {% endif %}
+                              "
+                  >
+                  <div class="d-flex justify-content-center image_control">
+                    <div class="image_container" style="{%if page.effect %}transform: rotateX(var(--move-y)) rotateY(var(--move-x));{% endif %}">
+                      <img class="image img-fluid" src="media/{{ page.column_content_2_image }}" alt="">
+                    </div>
+                  </div>
+                    <p>{{ page.column_content_2_text }}</p>
+                  </div>
+                  {% endif %}
+                  {% if page.column_number >= 3 %}
+                  <div class="p-4
+                              {% if page.column_number == 2 %}
+                                  col-6
+                              {% elif page.column_number == 3 %}
+                                  col-4
+                              {% elif page.column_number == 1 %}
+                                  col-12
+                              {% endif %}
+                              "
+                  >
+                  <div class="d-flex justify-content-center image_control">
+                    <div class="image_container" style="{%if page.effect %}transform: rotateX(var(--move-y)) rotateY(var(--move-x));{% endif %}">
+                      <img class="image img-fluid" src="media/{{ page.column_content_3_image }}" alt="">
+                    </div>
+                  </div>
+                    <p>{{ page.column_content_3_text }}</p>
+                  </div>
+                  {% endif %}
+
+          </div>
+          {% if page.slides.all %}
+          <div class="py-5 d-flex justify-content-center">
+            <div id="{{ page.id }}" class="carousel slide col-8" data-ride="carousel">
+              <div class="carousel-inner">
+                {% for slide in page.slides.all %}
+                  <div class="carousel-item {% if forloop.first %}active{% endif %} slider_item ratio ratio-4x3">
+                    <img src="{{ slide.image.url }}" class="slider_image" alt="...">
+                    <p class="slider_paragraph">{{slide.paragraph}}</p>
+                  </div>
+                {% endfor %}
+              </div>
+              <button class="carousel-control-prev" type="button" data-bs-target="#{{page.id}}" data-bs-slide="prev">
+                  <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                  <span class="visually-hidden">Previous</span>
+              </button>
+              <button class="carousel-control-next" type="button" data-bs-target="#{{page.id}}" data-bs-slide="next">
+                  <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                  <span class="visually-hidden">Next</span>
+              </button>
+            </div>
+          </div>
+          {% endif %}
+      </div>
+  {%endfor%}
+{% endblock %}
